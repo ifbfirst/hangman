@@ -1,335 +1,197 @@
-//create button Play and name, wrappers for game
+(() => {
+  "use strict";
 
-const nameGame = document.createElement("h1");
-nameGame.className = "name-game";
-nameGame.textContent = "Game Hangman";
-document.body.append(nameGame);
+  const MAX_MISSES = 6;
+  const STORAGE_KEY = "hangman:lastWord";
+  const KEY_ROWS = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+  const WORDS = [
+    { hint: "оранжевый", word: "ORANGE" },
+    { hint: "красный", word: "RED" },
+    { hint: "зелёный", word: "GREEN" },
+    { hint: "серый", word: "GREY" },
+    { hint: "чёрный", word: "BLACK" },
+    { hint: "голубой", word: "BLUE" },
+    { hint: "розовый", word: "PINK" },
+    { hint: "белый", word: "WHITE" },
+    { hint: "жёлтый", word: "YELLOW" },
+    { hint: "коричневый", word: "BROWN" },
+    { hint: "фиолетовый", word: "PURPLE" },
+  ];
 
-const buttonPlay = document.createElement("button");
-buttonPlay.className = "btn-play";
-buttonPlay.textContent = "Play";
-document.body.append(buttonPlay);
-
-const gameWrapper = document.createElement("div");
-gameWrapper.className = "game-wrapper";
-document.body.append(gameWrapper);
-
-const quizeWrapper = document.createElement("div");
-quizeWrapper.className = "quize-wrapper";
-gameWrapper.append(quizeWrapper);
-
-//create hangman
-
-let bodyArr = [];
-const hangmanWrapper = document.createElement("div");
-
-function createHangman() {
-  hangmanWrapper.className = "hangman-wrapper";
-  gameWrapper.append(hangmanWrapper);
-
-  const bodyAllParts = document.createElement("div");
-  bodyAllParts.className = "body-all-parts";
-  hangmanWrapper.appendChild(bodyAllParts);
-
-  bodyHead = document.createElement("div");
-  bodyHead.className = "body-head";
-  bodyAllParts.appendChild(bodyHead);
-  bodyHead.textContent = "O";
-  const bodyMiddle = document.createElement("div");
-  bodyMiddle.className = "body-middle";
-  bodyAllParts.appendChild(bodyMiddle);
-  const leftHand = document.createElement("span");
-  const rightHand = document.createElement("span");
-  const bodyCenter = document.createElement("span");
-  leftHand.className = "left-hand";
-  rightHand.className = "right-hand";
-  bodyCenter.className = "body-center";
-  bodyMiddle.appendChild(leftHand);
-  bodyMiddle.appendChild(bodyCenter);
-  bodyMiddle.appendChild(rightHand);
-  bodyCenter.textContent = "|";
-  leftHand.textContent = "/";
-  rightHand.textContent = "\\";
-  const bodyBottom = document.createElement("div");
-  bodyBottom.className = "body-bottom";
-  bodyAllParts.appendChild(bodyBottom);
-  const rightLeg = document.createElement("span");
-  const leftLeg = document.createElement("span");
-  bodyBottom.appendChild(leftLeg);
-  bodyBottom.appendChild(rightLeg);
-  leftLeg.className = "left-leg";
-  rightLeg.className = "right-leg";
-  leftLeg.textContent = "/";
-  rightLeg.textContent = "\\";
-
-  bodyArr = [bodyHead, bodyCenter, leftHand, rightHand, leftLeg, rightLeg];
-}
-
-//create elements of keyboard, points
-
-const wordKeyboard = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-];
-
-const wrapperKeyboard = document.createElement("div");
-wrapperKeyboard.className = "key-board";
-quizeWrapper.appendChild(wrapperKeyboard);
-let btnKeyboard;
-let btnKeyboardArr = [];
-function createKeyBoard() {
-  for (let i = 0; i < wordKeyboard.length; i = i + 1) {
-    btnKeyboard = document.createElement("button");
-    wrapperKeyboard.appendChild(btnKeyboard);
-    btnKeyboard.id = wordKeyboard[i];
-    btnKeyboard.className = "btn-letter";
-    btnKeyboard.textContent = `${wordKeyboard[i]}`;
-    btnKeyboardArr.push(btnKeyboard);
-
-    // wrapperKeyboard.innerHTML += `<button class="c" id=${wordKeyboard[i]}>${wordKeyboard[i]}</button>`;
-  }
-}
-createKeyBoard();
-
-// Create block guesses
-
-let guesses = document.createElement("div");
-let incorrectGuesses = 0;
-let correctGuesses = 0;
-
-function createGuesses() {
-  guesses.className = "guesses";
-  guesses.textContent = `Incorrect guesses: ${incorrectGuesses}/6`;
-  quizeWrapper.appendChild(guesses);
-}
-
-//listen to letter
-
-let incorrectGuessesBool;
-let resultGame;
-let idLetter;
-let idSecretLetter;
-let bu;
-
-// using physical keyboard
-
-function listenToKeyboard(event) {
-  idLetter = event.key.toUpperCase();
-  startGuessing(idLetter);
-}
-
-// using virtual keyboard
-
-wrapperKeyboard.onclick = function (event) {
-  let button = event.target.closest("button");
-  idLetter = button.id;
-  startGuessing(idLetter);
-};
-
-// function guessing
-
-function startGuessing(idLetter) {
-  let button = [];
-  let btnPressed;
-  let buttonElement;
-  button = btnKeyboardArr.filter((letter) => letter.id === idLetter);
-  buttonElement = button[0];
-  if (buttonElement.classList.contains("inactive")) {
-    btnPressed = true;
-  } else {
-    btnPressed = false;
-  }
-
-  incorrectGuessesBool = !false;
-
-  button[0].className = "btn-letter inactive";
-
-  let i;
-  for (i = 0; i < secretWord.length; i = i + 1) {
-    if (
-      idLetter === secretWord[i] &&
-      btnPressed === false &&
-      incorrectGuesses !== 6
-    ) {
-      idSecretLetter = document.querySelector(`#id${i}`);
-      idSecretLetter.textContent = `${secretWord[i]}`;
-      incorrectGuessesBool = false;
-      correctGuesses = correctGuesses + 1;
-      idSecretLetter.style.border = "none";
-    }
-  }
-  if (correctGuesses === secretWord.length) {
-    resultGame = "win";
-    setTimeout(function () {
-      stopGame(resultGame, secretWord);
-    }, 300);
-  }
-
-  if (
-    incorrectGuessesBool !== false &&
-    btnPressed === false &&
-    incorrectGuesses !== 6 &&
-    correctGuesses !== secretWord.length
-  ) {
-    incorrectGuesses = incorrectGuesses + 1;
-    guesses.textContent = `Incorrect guesses: ${incorrectGuesses}/6`;
-    bodyArr[incorrectGuesses - 1].style.opacity = "1";
-  } else {
-    incorrectGuesses = incorrectGuesses;
-  }
-  if (incorrectGuesses === 6) {
-    guesses.textContent = `Incorrect guesses: 6/6`;
-    resultGame = "lost";
-    setTimeout(function () {
-      stopGame(resultGame, secretWord);
-    }, 300);
-  }
-}
-
-// secret word
-
-const questionWrapper = document.createElement("div");
-const secretWordWrapper = document.createElement("div");
-let secretWord;
-let secretWordQuestion;
-
-function addSecretWord() {
-  secretWordQuestion = '';
-  secretWord = '';
-  
-  const secretWordArr = {
-    "Russian: oранжевый, English:": "orange",
-    "Russian: красный, English:": "red",
-    "Russian: зеленый, English:": "green",
-    "Russian: серый, English:": "grey",
-    "Russian: черный, English:": "black",
-    "Russian: голубой, English:": "blue",
-    "Russian: розовый, English:": "pink",
-    "Russian: белый, English:": "white",
-    "Russian: желтый, English:": "yellow",
-    "Russian: коричневый, English:": "brown",
-    "Russian: фиолетовый, English:": "purple",
+  const els = {
+    hint: document.querySelector("[data-hint]"),
+    word: document.querySelector("[data-word]"),
+    missCount: document.querySelector("[data-miss-count]"),
+    pips: [...document.querySelectorAll("[data-pips] span")],
+    parts: [...document.querySelectorAll("[data-part]")],
+    keyboard: document.querySelector("[data-keyboard]"),
+    modal: document.querySelector("[data-modal]"),
+    resultKicker: document.querySelector("[data-result-kicker]"),
+    resultTitle: document.querySelector("[data-result-title]"),
+    resultWord: document.querySelector("[data-result-word]"),
+    restartBtn: document.querySelector('[data-action="restart"]'),
   };
 
-  secretWordQuestion =
-    Object.keys(secretWordArr)[
-      Math.floor(Math.random() * Object.keys(secretWordArr).length)
-    ];
-  secretWord = secretWordArr[secretWordQuestion].toUpperCase();
+  const state = {
+    word: "",
+    revealed: [],
+    used: new Set(),
+    misses: 0,
+    locked: true,
+  };
 
-  // check on repeating
+  const keys = new Map();
 
-  if (secretWordQuestion === localStorage.getItem('sWord')) {
-    addSecretWord();
-} else {
-
-  localStorage.setItem('sWord', secretWordQuestion);
-
-//
-
-  questionWrapper.className = "question";
-  quizeWrapper.appendChild(questionWrapper);
-  questionWrapper.textContent = `${secretWordQuestion}`;
-
-  secretWordWrapper.className = "secret-word";
-  quizeWrapper.appendChild(secretWordWrapper);
-
-  let secretLetter;
-  for (let i = 0; i < secretWord.length; i = i + 1) {
-    secretLetter = document.createElement("span");
-    secretLetter.className = "secret-letter";
-    secretLetter.id = `id${i}`;
-    secretWordWrapper.appendChild(secretLetter);
-  }
-  window.addEventListener("keyup", listenToKeyboard);
-}
-}
-
-// stopGame
-
-const modalBg = document.createElement("div");
-document.body.append(modalBg);
-modalBg.className = "modal-bg";
-const modal = document.createElement("div");
-modalBg.appendChild(modal);
-modal.className = "modal";
-
-function stopGame(resultGame, secretWord) {
-  window.removeEventListener("keyup", listenToKeyboard);
-  var audio = new Audio();
-  audio.autoplay = true;
-  audio.volume = 0.3;
-  if (resultGame === "lost") {
-    modal.textContent = `You LOST! Secret word: ${secretWord}. Want to play again? `;
-    audio.src = "lost.mp3";
-  }
-  if (resultGame === "win") {
-    modal.textContent = `You WON! Secret word: ${secretWord}. Want to play again? `;
-    audio.src = "win.mp3";
+  function pickWord() {
+    const last = localStorage.getItem(STORAGE_KEY);
+    const pool = WORDS.filter((item) => item.word !== last);
+    const list = pool.length ? pool : WORDS;
+    return list[Math.floor(Math.random() * list.length)];
   }
 
-  modal.appendChild(buttonPlay);
-  buttonPlay.textContent = "Play again";
-  modalBg.style.display = "block";
-  modal.style.display = "block";
-  buttonPlay.style.display = "block";
-  
-  
+  function renderKeyboard() {
+    els.keyboard.replaceChildren();
+    keys.clear();
 
-}
+    KEY_ROWS.forEach((row) => {
+      const rowEl = document.createElement("div");
+      rowEl.className = `keyboard__row keyboard__row--${row.length}`;
 
-//listen to buttonPlay
+      [...row].forEach((letter) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "key";
+        button.dataset.letter = letter;
+        button.textContent = letter;
+        button.setAttribute("aria-label", `Letter ${letter}`);
+        rowEl.append(button);
+        keys.set(letter, button);
+      });
 
-buttonPlay.addEventListener("click", function () {
-
- // Reset elements of game
-
-  while (questionWrapper.firstChild) {
-    questionWrapper.removeChild(questionWrapper.firstChild);
+      els.keyboard.append(rowEl);
+    });
   }
-  while (secretWordWrapper.firstChild) {
-    secretWordWrapper.removeChild(secretWordWrapper.firstChild);
-  }
-  incorrectGuesses = 0;
-  correctGuesses = 0;
 
-  while (hangmanWrapper.firstChild) {
-    hangmanWrapper.removeChild(hangmanWrapper.firstChild);
+  function renderWord(revealMissed = false) {
+    els.word.replaceChildren(
+      ...state.word.split("").map((letter, index) => {
+        const slot = document.createElement("span");
+        slot.className = "slot";
+        const open = state.revealed[index];
+        slot.textContent = open || revealMissed ? letter : "";
+        if (open) slot.classList.add("is-open");
+        if (!open && revealMissed) slot.classList.add("is-reveal");
+        return slot;
+      })
+    );
   }
-  const buttonLetter = document.querySelectorAll(".inactive");
-  for (let i = 0; i < buttonLetter.length; i++) {
-    buttonLetter[i].classList.remove("inactive");
-  }
-  // redesign elements of game
 
-  gameWrapper.style.display = "flex";
-  createHangman();
-  addSecretWord();
-  createGuesses();
-  buttonPlay.style.display = "none";
-  modal.style.display = "none";
-  modalBg.style.display = "none";
-});
+  function renderLives() {
+    els.missCount.textContent = String(state.misses);
+    els.pips.forEach((pip, index) => {
+      pip.classList.toggle("is-lost", index < state.misses);
+    });
+    els.parts.forEach((part, index) => {
+      part.classList.toggle("is-on", index < state.misses);
+    });
+  }
+
+  function resetKeys() {
+    keys.forEach((button) => {
+      button.disabled = false;
+      button.classList.remove("is-hit", "is-miss");
+    });
+  }
+
+  function playSound(file) {
+    const audio = new Audio(file);
+    audio.volume = 0.35;
+    audio.play().catch(() => {});
+  }
+
+  function startRound() {
+    const next = pickWord();
+    state.word = next.word;
+    state.revealed = Array(next.word.length).fill(false);
+    state.used = new Set();
+    state.misses = 0;
+    state.locked = false;
+
+    localStorage.setItem(STORAGE_KEY, next.word);
+    els.hint.textContent = next.hint;
+    els.modal.hidden = true;
+
+    resetKeys();
+    renderWord();
+    renderLives();
+  }
+
+  function isWon() {
+    return state.revealed.every(Boolean);
+  }
+
+  function endRound(didWin) {
+    state.locked = true;
+    keys.forEach((button) => {
+      button.disabled = true;
+    });
+
+    if (!didWin) renderWord(true);
+
+    window.setTimeout(() => {
+      const wordEl = document.createElement("strong");
+      wordEl.textContent = state.word;
+      els.resultKicker.textContent = didWin ? "Well played" : "Round over";
+      els.resultTitle.textContent = didWin ? "You won" : "You lost";
+      els.resultWord.replaceChildren("The word was ", wordEl);
+      els.modal.hidden = false;
+      els.restartBtn.focus();
+      playSound(didWin ? "win.mp3" : "lost.mp3");
+    }, 280);
+  }
+
+  function guess(letter) {
+    if (state.locked || !keys.has(letter) || state.used.has(letter)) return;
+
+    state.used.add(letter);
+    const button = keys.get(letter);
+    const hit = state.word.includes(letter);
+
+    button.disabled = true;
+    button.classList.add(hit ? "is-hit" : "is-miss");
+
+    if (hit) {
+      state.word.split("").forEach((char, index) => {
+        if (char === letter) state.revealed[index] = true;
+      });
+      renderWord();
+      if (isWon()) endRound(true);
+      return;
+    }
+
+    state.misses += 1;
+    renderLives();
+    if (state.misses >= MAX_MISSES) endRound(false);
+  }
+
+  function onPhysicalKey(event) {
+    if (event.repeat || state.locked) return;
+    const letter = event.key.toUpperCase();
+    if (!/^[A-Z]$/.test(letter)) return;
+    event.preventDefault();
+    guess(letter);
+  }
+
+  renderKeyboard();
+  startRound();
+
+  els.restartBtn.addEventListener("click", startRound);
+
+  els.keyboard.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-letter]");
+    if (!button) return;
+    guess(button.dataset.letter);
+  });
+
+  window.addEventListener("keydown", onPhysicalKey);
+})();
